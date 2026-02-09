@@ -1,0 +1,86 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package org.sheasepherd.ghostnettracker;
+
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.convert.Converter;
+import jakarta.faces.convert.ConverterException;
+import jakarta.faces.convert.FacesConverter;
+
+/**
+ *
+ * @author gloriapulsinger
+ */
+@FacesConverter("lonConverter")
+public class LongitudeConverter implements Converter {
+    
+    @Override
+    public Object getAsObject(FacesContext context, UIComponent component, String dms){
+        if(dms == null || dms.isBlank()){
+            return null;
+        }
+       
+        try{
+            String[] dmsTeile = dms.split("[°'\"]");
+            int grad = Integer.parseInt(dmsTeile[0].trim());
+            int min = Integer.parseInt(dmsTeile[1].trim());
+            double sek = Double.parseDouble(dmsTeile[2].trim());
+            char dir = dmsTeile[3].trim().charAt(0);
+            
+            
+            double dezimal = grad + (min / 60.0) + (sek / 3600.0);
+            
+            if (grad < 0 || grad > 180 || min < 0 || min > 59 || sek < 0 || sek >= 60 || (dir != 'E' && dir != 'W') ||
+                dezimal < -180 || dezimal > 180) {
+
+                throw new IllegalArgumentException();
+            }
+        if (dir == 'S') {
+            dezimal *= -1;
+        }
+        
+        return dezimal;
+             
+        }catch (Exception e) {
+            throw new ConverterException(new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Ungültige Longitude. Bitte im DMS-Format eingeben, z.B. 13°22'30\\\"E.",
+                    null
+            ));
+        }
+        
+    }
+    
+    @Override
+    public String getAsString(FacesContext context, UIComponent component, Object wert){
+         if (wert == null) return "";
+         
+         if (!(wert instanceof Double)) {
+            return wert.toString();
+        }
+        
+        double dezimal = (Double) wert;
+        
+        
+        
+        double absDezimal = Math.abs(dezimal);
+        int grad = (int) absDezimal;
+        double rest = (absDezimal - grad) * 60;
+        int min = (int) rest;
+        double sek = (rest - min) * 60;
+        
+        char dir = 'W';
+        if(dezimal>=0){
+            dir = 'E';
+        }
+       
+ 
+        
+        return String.format("%d°%d'%.2f\"%c", grad, min, sek, dir);
+    }    
+}
+

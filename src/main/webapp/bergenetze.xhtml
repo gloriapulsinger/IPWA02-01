@@ -1,0 +1,230 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+     <h:head>
+        <title>Netz Bergen | Shea Sepherd</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <h:outputStylesheet library="css" name="style.css" />
+
+    </h:head>
+    <h:body>
+        <header  class="headerStyle">
+            <nav>
+                <h:graphicImage library="images" name="Logo.png" alt="Logo" width="150" height="100"/>
+                <h:link outcome="index" class="headerLinkStyle"> Startseite </h:link>
+                <h:link outcome="meldeformular" class="headerLinkStyle"> Melden</h:link>
+                <h:link outcome="bergenetze" class="headerLinkStyle"> Bergen </h:link> 
+            </nav>
+        </header>
+        <main>
+        <script src="https://maps.google.com/maps/api/js?key=AIzaSyCvCDkYieuUBmMWon_mfLAfjuaeuosuqow&amp;sensor=true"></script>
+        <h:outputScript library="js" name="mapMarker.js" />
+        <div class="card">
+            <h:form prependId="false" id="map-form">
+                        <p:gmap widgetVar="w_gmap" center="41.381542, 2.122893" zoom="13" type="HYBRID" style="width:100%;height:600px"
+                                model="#{mapController.simpleModel}" id="map-component" >
+
+                            <p:ajax event="overlaySelect" listener="#{mapController.onMarkerSelect}"/>
+
+                            <p:gmapInfoWindow id="infoWindow">
+                                <p:outputPanel style="text-align: center; display: block; margin: auto">
+                                    <h:outputText value="Größe: #{mapController.selectedNetz.groesse}" /><br/>
+                                    <h:outputText value="Status: #{mapController.selectedNetz.status}" /><br/>
+                                    <h:outputText value="bergende Person: #{mapController.selectedNetz.bergendePerson.vorname} #{mapController.selectedNetz.bergendePerson.nachname}" /><br/>
+                                    <h:outputText value="Telefon: #{mapController.selectedNetz.bergendePerson.telefonnummer}" /><br/>
+                                    <p:commandButton value="Zur Tabelle"
+                                                      process="@this"
+                                                      onclick="PF('netzTable').getPaginator().setPage(#{mapController.selectedPage});
+                                        waitAndScroll(#{mapController.selectedNetzId}); " />
+                                </p:outputPanel>
+                            </p:gmapInfoWindow>
+                        </p:gmap>
+                    
+                    <div class="map-legend">
+                        <input type="checkbox" checked="true"
+                                    onchange="toggleMarkers('iconRed', this.checked)" />
+                            <h:graphicImage library="images" name="iconRed.png"/> Gemeldet
+                        <br/>
+                        <input type="checkbox" checked="true"
+                                    onchange="toggleMarkers('iconYellow', this.checked)" />
+                        <h:graphicImage library="images" name="iconYellow.png"/> Bergung bevorstehend
+                        <br/>
+                        <input type="checkbox" checked="true"
+                                    onchange="toggleMarkers('iconGreen', this.checked)" />
+                        <h:graphicImage library="images" name="iconGreen.png"/> Geborgen
+                        <br/>
+                        <input type="checkbox" checked="true"
+                                    onchange="toggleMarkers('iconGrey', this.checked)" />
+                        <h:graphicImage library="images" name="iconGrey.png"/> Verschollen
+                        <br/>
+                        <input type="checkbox" checked="true"
+                                    onchange="toggleAll(this.checked)" />
+                        <h:graphicImage library="images" name="iconEmpty.png"/> Alle
+                    </div> 
+            </h:form>
+        </div>
+        <h:form id="mainForm">
+        <p:dataTable id="netzTable" var="geisternetz" value="#{bergeController.alleNetze}"
+                     rowKey="#{geisternetz.netzID}"
+                     allowUnsorting="true"  paginator="true" rows="10"
+                     widgetVar="netzTable" >
+            
+            <!-- id hier dient dem scrollen ueber die map-->
+            <p:column headerText="ID" style="display:none;">
+                <!--<h:outputText class="rows" value="#{geisternetz.netzID}" />-->
+                <span class="rows"
+                    data-netz-id="#{geisternetz.netzID}" />
+            </p:column>
+            
+            <p:column headerText="Latitue, Longitude">
+                <h:outputText value="#{geisternetz.latitude}" converter="latConverter"/>
+                <br />
+                <h:outputText value="#{geisternetz.longitude}" converter="lonConverter"/>
+            </p:column>
+           
+            <p:column sortBy="#{geisternetz.groesse}" headerText="Größe" >
+                <h:outputText value="#{geisternetz.groesse}" />
+            </p:column>
+            
+            <p:column headerText="Status" filterBy="#{geisternetz.status}" filterMatchMode="equals">
+                <h:outputText value="#{geisternetz.status}" />
+
+                <!-- Facet für benutzerdefiniertes Filter-UI -->
+                <f:facet name="filter">
+                    <p:selectOneMenu onchange="PF('netzTable').filter()">
+                        <f:selectItems value="#{bergeController.statusOptions}" />
+                    </p:selectOneMenu>
+                </f:facet>
+            </p:column>
+            
+            <!-- zeigt zuerst die ersten fuenf meldungen an, drueckt man den knopf "weitere meldungen anzeigen" werden
+            alle meldungen angezeigt-->
+             <p:column headerText="Meldungen" >
+                 
+                 <ui:repeat value="#{bergeController.angezeigteMeldungen(geisternetz)}" var="meldung">
+                    <h:panelGroup layout="block">
+                        <h:outputText value="#{meldung.zeitpunkt}">
+                            <f:convertDateTime pattern="yyyy-MM-dd"/>
+                        </h:outputText>
+                        <h:outputText value=": #{meldung.person.vorname} #{meldung.person.nachname}" />
+                        <h:outputText rendered="#{!meldung.person.telefonnummer.isBlank()}" value=", #{meldung.person.telefonnummer}" />
+                        <br/><br/>
+                    </h:panelGroup>
+                </ui:repeat>
+
+                <p:commandButton value="#{bergeController.alleMeldungenVisible(geisternetz) ? 'weniger anzeigen' : 'mehr anzeigen'}"
+                                 action="#{bergeController.toggleAlleMeldungen(geisternetz)}"
+                                 rendered="#{bergeController.mehrAlsFuenfMeldungen(geisternetz)}"
+                                 update="mainForm"
+                                 class="buttonStyle"/>
+            </p:column>
+            
+            <!-- zeigt person die sich fuer das bergen eingetragen hat, falls sich niemand eingetragen hat
+            soll ein knopf zum eingetragen angezeigt werden, ein knopf zum eintragen einer bergung soll immer angezeigt
+            werden (falls jemand sich nicht zuerst angemeldet hat aber trotzdem bergen möchte)-->
+            <p:column headerText="Bergung"> 
+            <!-- Anzeige bergende Person, falls vorhanden -->
+            <h:panelGroup rendered="#{geisternetz.bergendePerson != null and bergeController.getAktuelleForm(geisternetz) == 'NONE'}">
+                <h:outputText rendered="#{geisternetz.status == 'GEBORGEN'}" 
+                                      value="Das Netz wurde bereits geborgen."/>
+                <br />
+                <h:outputText value="Bergende Person: #{geisternetz.bergendePerson.vorname} #{geisternetz.bergendePerson.nachname}, #{geisternetz.bergendePerson.telefonnummer}"/>
+                <br />
+            </h:panelGroup>
+
+            <!-- Form für BV oder GB -->
+            <h:panelGroup rendered="#{bergeController.getAktuelleForm(geisternetz) != 'NONE'}" layout="block">
+                <p:commandButton rendered="#{bergeController.getAktuelleForm(geisternetz) == 'BV'}" 
+                       icon="pi pi-times"
+                        action="#{bergeController.toggleBVForm(geisternetz)}"
+                        process="@this"
+                        update="mainForm"
+                        styleClass="close-btn rounded-button ui-button-flat ui-button-plain"/>
+                
+                <p:commandButton rendered="#{bergeController.getAktuelleForm(geisternetz) == 'GB'}" 
+                        icon="pi pi-times"
+                        action="#{bergeController.toggleGBForm(geisternetz)}"
+                        process="@this"
+                        update="mainForm"
+                        styleClass="close-btn rounded-button ui-button-flat ui-button-plain"/>
+                
+                <h:panelGroup layout="block" style="margin-bottom:10px;">
+                    <h:outputLabel for="vorname" value="Vorname:" />
+                    <br />
+                    <h:inputText id="vorname" value="#{bergeController.person.vorname}" />
+                    <p:message for="vorname" />
+                </h:panelGroup>
+
+                <h:panelGroup layout="block" style="margin-bottom:10px;">
+                    <h:outputLabel for="nachname" value="Nachname:" />
+                    <br />
+                    <h:inputText id="nachname" value="#{bergeController.person.nachname}" />
+                    <p:message for="nachname" />
+                </h:panelGroup>
+
+                <h:panelGroup layout="block" style="margin-bottom:10px;">
+                    <h:outputLabel for="telefonnummer" value="Telefonnummer:" />
+                    <br />
+                    <h:inputText id="telefonnummer"
+                                 value="#{bergeController.person.telefonnummer}"
+                                 required="true"
+                                 requiredMessage="Bitte gib eine Telefonnummer an!" />
+                    <p:message for="telefonnummer" />
+                </h:panelGroup>
+
+                <p:commandButton rendered="#{bergeController.getAktuelleForm(geisternetz) == 'BV'}" 
+                                 value="zur Bergung eintragen!"
+                                 action="#{bergeController.bergungBevorstehendEintragen(geisternetz)}"
+                                 update="mainForm"
+                                 oncomplete="setTimeout(function(){ updateMarkerStatus('#{geisternetz.netzID}', 'BERGUNGBEVORSTEHEND'); }, 100);"
+                                 class="buttonStyle"/>
+                
+                <p:commandButton rendered="#{bergeController.getAktuelleForm(geisternetz) == 'GB'}" 
+                                 value="erfolgreiche Bergung eintragen"
+                                 action="#{bergeController.geborgenEintragen(geisternetz)}"
+                                 update="mainForm"
+                                 oncomplete="setTimeout(function(){ updateMarkerStatus('#{geisternetz.netzID}', 'GEBORGEN'); }, 100);"
+                                 class="buttonStyle"/>
+            </h:panelGroup>
+
+            <!-- Knopf "Jetzt eintragen", falls niemand angemeldet und keine Form geöffnet -->
+            <h:panelGroup rendered="#{geisternetz.bergendePerson == null and bergeController.getAktuelleForm(geisternetz) == 'NONE'}">
+                    Es hat sich noch niemand eingetragen! <br/>
+                    <br />
+                    <p:commandButton value="Jetzt eintragen!"
+                                     action="#{bergeController.toggleBVForm(geisternetz)}"
+                                     update="mainForm"
+                                     process="@this"
+                                     class="buttonStyle"/>
+            </h:panelGroup>
+            
+            <h:panelGroup rendered="#{(bergeController.getAktuelleForm(geisternetz) == 'NONE') 
+                                           and geisternetz.status != 'GEBORGEN'}"> 
+                     <br />
+                     <br />
+                    <p:commandButton value="erfolgreiche Bergung eintragen!"
+                                     action="#{bergeController.toggleGBForm(geisternetz)}"
+                                     update="mainForm"
+                                     process="@this"
+                                     class="buttonStyle"/>
+                </h:panelGroup>
+
+            </p:column>
+            </p:dataTable>
+
+        </h:form>
+  
+        </main>
+        <footer  class="headerStyle">
+             <nav>
+                <h:link outcome="impressum" class="headerLinkStyle"> Impressum </h:link>
+                <h:link outcome="datenschutz" class="headerLinkStyle"> Datenschutz</h:link>
+            </nav> 
+        </footer>
+    </h:body>
+</html>
+

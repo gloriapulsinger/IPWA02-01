@@ -1,0 +1,108 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+         <title>Netz Melden | Shea Sepherd</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <h:outputStylesheet library="css" name="style.css" />
+    </h:head>
+    <h:body>
+        <header style="background-color: #000035">
+            <nav>
+                <h:graphicImage library="images" name="Logo.png" alt="Logo" width="150" height="100"/>
+                <h:link outcome="index" class="headerLinkStyle"> Startseite </h:link>
+                <h:link outcome="meldeformular" class="headerLinkStyle"> Melden</h:link>
+                <h:link outcome="bergenetze" class="headerLinkStyle"> Bergen </h:link>  
+            </nav>
+        </header>
+        <main>
+        <h:form id="meldeForm">
+            
+            <h:panelGroup  rendered="#{!meldeController.submitted}">
+                <h1>Melden eines Geisternetzes</h1>
+                <h2>Angaben zur eigenen Person:</h2>
+                <h:outputLabel for="vorname" value="Vorname:" />
+                <br />
+                <h:inputText id="vorname" value="#{meldeController.person.vorname}"/>
+                <br />
+                <p:message for="vorname"/>
+                <br />
+
+                <h:outputLabel for="nachname" value="Nachname:" />
+                <br />
+                <h:inputText id="nachname" value="#{meldeController.person.nachname}" />  
+                <br />
+                <p:message for="nachname"/>
+                <br />
+
+
+                <h:outputLabel for="telefonnummer" value="Telefonnummer(optional):" />
+                <br />
+                <h:inputText id="telefonnummer" value="#{meldeController.person.telefonnummer}" /> 
+                <br />
+                <p:message for="telefonnummer"/>
+                <br />
+
+                <h2>Angaben zum Netz</h2>
+                <h:outputLabel for="groesse" value="Geschätzte Größe(in m^2):" />
+                <br />
+                <h:inputText id="groesse" value="#{meldeController.geisternetz.groesse}"
+                             validatorMessage="Bitte gib eine Zahl zwischen 0.001 und 1000000 ein."
+                             converterMessage="Bitte gib eine Zahl ein."
+                             required="true"  requiredMessage="Bitte gib die Größe des Netzes ein.">
+                    <f:validateDoubleRange minimum="0.001" maximum="1000000"/>
+                </h:inputText >
+                <br />
+                
+                <p:message for="groesse"/>
+                <br />
+
+                <h:outputLabel for="lat" value="Latitude (in DMS):" />
+                <br />
+                <h:inputText id="lat" value="#{meldeController.geisternetz.latitude}" 
+                             converter="latConverter" required="true"
+                             requiredMessage="Bitte gib die Latitude im DMS-Format eingeben , z.B. 48°12'30''N." />
+                <br />
+                <p:message for="lat"/>
+                <br />
+       
+
+                <h:outputLabel for="lon" value="Longitute (in DMS):" />
+                <br />
+                <h:inputText id="lon" value="#{meldeController.geisternetz.longitude}" 
+                             converter="lonConverter" required="true"
+                             requiredMessage="Bitte gib die Longitude im DMS-Format eingeben, z.B. 13°22'30''E"/>
+                <br />
+                <p:message for="lon"/>
+                <br />
+
+
+                <p:commandButton value="Speichern" 
+                                 action="#{meldeController.save}" 
+                                 update="@form"
+                                 class="buttonStyle"/>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{meldeController.submitted}">
+                Das Geisternetz wurde erfolreich gemeldet. Danke für Deine Hilfe!
+                <br />
+                <p:commandButton value="Weiteres Netz melden!" 
+                                 action="#{meldeController.resetForm}"
+                                 update="meldeForm"
+                                 class="buttonStyle"/>
+            </h:panelGroup>
+                
+        </h:form>
+        </main>
+        <footer style="background-color: #000035">
+             <nav>
+                <h:link outcome="impressum" class="headerLinkStyle"> Impressum </h:link>
+                <h:link outcome="datenschutz" class="headerLinkStyle"> Datenschutz</h:link> 
+            </nav> 
+        </footer>
+        
+    </h:body>
+</html>
+

@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html">
+    <h:head>
+       <title>Impressum | SheaSepherd</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <h:outputStylesheet library="css" name="style.css" />
+    </h:head>
+    <h:body style="min-height: 100vh">
+        <header style="background-color: #000035">
+            <nav>
+                <h:graphicImage library="images" name="Logo.png" alt="Logo" width="150" height="100"/>
+                <h:link outcome="index" class="headerLinkStyle"> Startseite </h:link>
+                <h:link outcome="meldeformular" class="headerLinkStyle"> Melden</h:link>
+                <h:link outcome="bergenetze" class="headerLinkStyle"> Bergen </h:link>
+            </nav>
+        </header>
+       <main>
+        <h1>Impressum</h1>
+        <h2>Herausgeber: </h2>
+        <p>
+            SheaSepherd
+            <br />
+            Meergasse 1
+            <br />
+            D-12345 Dorfdorf
+        </p>
+
+        Rechtsform: Non-Profit Organisation
+        <br />
+        <br />
+        Tel:<a href="tel:+49123456789">123456789</a> 
+        <br />
+        E-Mail: <a href="mailto:info@sheasepherd.com" >info@sheasepherd.com</a>
+        </main>
+        <footer style="background-color: #000035">
+             <nav>
+                <h:link outcome="impressum" class="headerLinkStyle"> Impressum </h:link>
+                <h:link outcome="datenschutz" class="headerLinkStyle"> Datenschutz</h:link> 
+            </nav> 
+        </footer>
+    </h:body>
+    
+</html>
+
