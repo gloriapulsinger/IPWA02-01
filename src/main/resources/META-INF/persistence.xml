@@ -13,7 +13,8 @@
                 value="jdbc:mysql://localhost:3306/GeisternetzTrackerDB?
                 useSSL=false&amp;allowPublicKeyRetrieval=true&amp;serverTimezone=UTC"/>
       <property name="jakarta.persistence.jdbc.user" value="root"/>
-      <property name="jakarta.persistence.jdbc.password" value="Idsjwee78."/>
+      <!--passwort wurde entfernt-->
+      <property name="jakarta.persistence.jdbc.password" value=""/>
       <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
       
       <property name="hibernate.show_sql" value="true"/>
